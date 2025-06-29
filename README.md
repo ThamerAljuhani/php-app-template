@@ -4,7 +4,7 @@
 
 **To be used as a template repo**
 
-**\The worlkflow will run on Releases tagged with v\.\*\*.\***
+**The workflow will run on Releases tagged with v.\*.**
 
 ## Required Repository Secrets
 
