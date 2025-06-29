@@ -1,0 +1,114 @@
+name: Build and Deploy to VPS
+
+on:
+  release:
+    types: [published]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME}}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}:${{ github.event.release.tag_name || github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}:latest
+
+      - name: Check if VPS is up
+        run: |
+          echo "Checking if VPS is reachable..."
+          if ! nc -zvw3 ${{ secrets.SSH_HOST }} 22; then
+          echo "VPS is down or unreachable. Stopping deployment."
+          exit 1
+          fi
+          echo "VPS is online, proceeding with deployment steps."
+
+      - name: Upload compose.prod.yml to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          source: compose.prod.yml
+          target: apps/${{ secrets.PROJECT_NAME }}/
+          rm: true
+
+      - name: Deploy using ssh
+        uses: appleboy/ssh-action@master
+        env:
+          PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          IMAGE_TAG: ${{ github.event.release.tag_name || github.sha }} # <--- Add this line
+
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            set -x # Enable debug mode to print commands and their arguments as they are executed
+            export PROJECT_NAME="${{ secrets.PROJECT_NAME }}"
+            export DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}"
+            export MYSQL_HOST="${{ secrets.MYSQL_HOST }}"
+            export MYSQL_DATABASE="${{ secrets.MYSQL_DATABASE }}"
+            export MYSQL_USER="${{ secrets.MYSQL_USER }}"
+            export MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}"
+            export IMAGE_TAG="${{ github.event.release.tag_name || github.sha }}"
+            echo "[INFO] Starting deployment for ${PROJECT_NAME} with image tag ${IMAGE_TAG}"
+            set -e
+            echo "[INFO] Navigating to project directory"
+            mkdir -p apps/${PROJECT_NAME}
+            cd apps/${PROJECT_NAME}
+            echo "[INFO] Pulling new image versions"
+            docker pull ${DOCKERHUB_USERNAME}/${PROJECT_NAME}:${IMAGE_TAG}
+            docker tag ${DOCKERHUB_USERNAME}/${PROJECT_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${PROJECT_NAME}:latest
+            echo "[INFO] Capturing current image for rollback"
+            CONTAINER_ID=$(docker ps -aqf "name=${PROJECT_NAME}") || true
+            if [ -n "$CONTAINER_ID" ]; then
+              CURRENT_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$CONTAINER_ID")
+              echo "Previous image: $CURRENT_IMAGE"
+            else
+              echo "[WARN] No existing container found"
+            fi
+
+            echo "[INFO] Starting containers with latest image"
+            docker stop "${PROJECT_NAME}" || true
+            docker rm "${PROJECT_NAME}" || true
+            echo "[INFO] Running new container with latest image"
+            docker run -d \
+            --name "${PROJECT_NAME}" \
+            --env DB_HOST="${MYSQL_HOST}" \
+            --env DB_NAME="${MYSQL_DATABASE}" \
+            --env DB_USER="${MYSQL_USER}" \
+            --env DB_PASS="${MYSQL_PASSWORD}" \
+            --label "traefik.enable=true" \
+            --label "traefik.http.routers.${PROJECT_NAME}.rule=Host(\"${PROJECT_NAME}.thameraljohani.com\")" \
+            --label "traefik.http.routers.${PROJECT_NAME}.entrypoints=https" \
+            --label "traefik.http.routers.${PROJECT_NAME}.tls=true" \
+            --label "traefik.http.routers.${PROJECT_NAME}.tls.certresolver=cloudflare" \
+            --label "traefik.http.services.${PROJECT_NAME}.loadbalancer.server.port=80" \
+            --restart unless-stopped \
+            --network proxy \
+            "${DOCKERHUB_USERNAME}/${PROJECT_NAME}:latest"
+            docker network connect db-network "${PROJECT_NAME}"
+            echo "[INFO] Deployment completed successfully"
+            echo "[INFO] Current image: ${DOCKERHUB_USERNAME}/${PROJECT_NAME}:latest"

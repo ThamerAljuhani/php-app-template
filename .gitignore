@@ -1,0 +1,38 @@
+# Ignore Composer dependencies
+/vendor/
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore PHPStorm and VSCode settings
+.idea/
+.vscode/
+
+
+
+# Ignore log files and reports
+*.log
+*.cache
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore Docker artifacts
+docker-compose.override.yml
+
+# Ignore node modules if using Node.js tooling
+node_modules/
+
+# Ignore PHPUnit test results
+phpunit.xml
+phpunit.result.cache
+
+# Ignore coverage reports
+coverage/
+clover.xml
+
+# Ignore build artifacts
+/build/
+dist/

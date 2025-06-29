@@ -1,0 +1,38 @@
+# Ignore node_modules and other dependency directories
+node_modules/
+bower_components/
+vendor/
+
+# Ignore Git files
+.git
+.gitignore
+
+# Ignore composer caches
+composer.phar
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Ignore OS or editor swap files
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# Ignore test, docs, and CI/CD config folders/files if not needed in the image
+/tests
+docs/
+.github/
+docker-compose.yml
+docker-compose.*.yml
+
+# Ignore build output
+build/
+dist/
+coverage/
