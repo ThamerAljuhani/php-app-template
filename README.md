@@ -3,6 +3,7 @@
 - Follows best practices in `Dockerfile`, and sets up a working container with a TLS URL behind a Traefik reverse-proxy
 
 **To be used as a template repo**
+**The worlkflow will run on Releases tagged with v*.*.\* **
 
 ## Required Repository Secrets
 

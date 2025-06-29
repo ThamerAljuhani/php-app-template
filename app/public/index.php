@@ -27,7 +27,7 @@ if ($uri === '/' || preg_match('#/index\.php$#i', $uri)) {
 $route = trim($uri, '/') ?: 'home';
 
 // Allow routes like 'home', 'add_todos', or 'home.php'
-if (! preg_match('/^[a-z0-9_-]+(\.php)?$/i', $route)) {
+if (!preg_match('/^[a-z0-9_-]+(\.php)?$/i', $route)) {
     http_response_code(400);
     exit('Bad request');
 }
