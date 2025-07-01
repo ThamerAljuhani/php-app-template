@@ -69,8 +69,8 @@ RUN set -eux; \
 
 # ─── Application Code and Permissions ──────────────────────────────────────────
 # Copy Composer-installed dependencies and application code, create required dirs, and set permissions
-COPY --from=deps /app /var/www/html
 COPY ./app /var/www/html
+COPY --from=deps /app/vendor /var/www/html/vendor
 RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html \
     && find storage bootstrap/cache -type d -exec chmod 775 {} \; \

@@ -1,10 +1,10 @@
 services:
   web:
-    image: devt101/basic:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     ports:
-      - "8000:80"
-    volumes:
-      - ./app:/var/www/html
+      - "80:80"
     environment:
       # If your container PHP entrypoint reads this, it can toggle error display
       PHP_DISPLAY_ERRORS: "1"
