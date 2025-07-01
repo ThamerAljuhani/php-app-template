@@ -21,25 +21,24 @@ Make sure to set the following repo secrets:
 - [ ] `SSH_KEY`
 - [ ] `SSH_USER`
 
-
-Prorpsed File Structue for Vanilla PHP app:
+Proposed File Structure for Vanilla PHP app:
 
 ├── app/
-│   ├── config/            # DB and environment configs
-│   ├── controllers/       # Request handlers
-│   ├── models/            # ORM/data access
-│   ├── views/             # PHP templates
-│   ├── lib/               # Utilities (auth, mailer)
-│   └── public/            # Web assets & index.php
-│       ├── css/
-│       ├── js/
-│       └── images/
-├── database/              # SQL scripts & migrations
-│   └── migrations/
-├── docker/                # Docker setup
-│   ├── Dockerfile.apache
-│   └── docker-compose.yml
-├── docs/                  # Doc source (SRS, ERDs)
-├── tests/                 # Unit/integration tests
-├── vendor/                # Composer deps
-└── README.md              # Overview & setup
+│ ├── config/ # DB and environment configs
+│ ├── controllers/ # Request handlers
+│ ├── models/ # ORM/data access
+│ ├── views/ # PHP templates
+│ ├── lib/ # Utilities (auth, mailer)
+│ └── public/ # Web assets & index.php
+│ ├── css/
+│ ├── js/
+│ └── images/
+├── database/ # SQL scripts & migrations
+│ └── migrations/
+├── docker/ # Docker setup
+│ ├── Dockerfile.apache
+│ └── docker-compose.yml
+├── docs/ # Doc source (SRS, ERDs)
+├── tests/ # Unit/integration tests
+├── vendor/ # Composer deps
+└── README.md # Overview & setup
