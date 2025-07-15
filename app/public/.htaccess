@@ -1,6 +1,32 @@
-<IfModule mod_rewrite.c>
+<!-- <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L]
+</IfModule> -->
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On # Redirect /file.php to /file (SEO-friendly) RewriteCond
+  %{THE_REQUEST} \s/([^.]+)\.php[\s?] [NC] RewriteRule ^ /%1 [R=301,L] #
+  Internally rewrite /file to /file.php RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-f RewriteCond %{REQUEST_FILENAME}\.php -f
+  RewriteRule ^([^/]+)$ $1.php [L] # Front controller: route everything else to
+  index.php RewriteCond %{REQUEST_FILENAME} !-f RewriteCond %{REQUEST_FILENAME}
+  !-d RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Prevent MIME-type sniffing Header always set X-Content-Type-Options
+  "nosniff" # Cross-site scripting protection (legacy) Header always set
+  X-XSS-Protection "1; mode=block" # Prevent embedding in iframes (clickjacking)
+  Header always set X-Frame-Options "SAMEORIGIN" # Enforce HTTPS for all
+  connections (HSTS) Header always set Strict-Transport-Security
+  "max-age=31536000; includeSubDomains; preload" # Content Security Policy
+  (adjust to your needs) Header always set Content-Security-Policy "default-src
+  'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src
+  'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self';
+  form-action 'self'" # Prevent browsers from sending referrer data to other
+  sites Header always set Referrer-Policy "strict-origin-when-cross-origin" #
+  Controls what browsers do with features like microphone, camera, etc. Header
+  always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
