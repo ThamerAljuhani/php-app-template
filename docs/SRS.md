@@ -44,8 +44,6 @@
 
 ### 2.6 Operational Assumptions
 
--
-
 ---
 
 ## 3. Functional Requirements
@@ -76,9 +74,7 @@
 
 ### 3.7 Loan Management Module
 
--
-
----
+- ***
 
 ## 4. Non-Functional Requirements
 
@@ -104,9 +100,7 @@
 
 ### 4.6 Scalability
 
--
-
----
+- ***
 
 ## 5. External Interface Specifications
 
@@ -124,9 +118,7 @@
 
 ### 5.4 Communication Interfaces
 
--
-
----
+- ***
 
 ## 6. High-Level Architecture
 
